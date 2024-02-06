@@ -119,11 +119,97 @@ class UserInterface():
             ]
         ]
 
+        orientation_col = [
+            [
+                sg.Push(),
+                sg.Text("Rotation", pad=(0, 0)),
+                sg.Push()
+            ],
+            [
+                sg.Slider((-180, 180), 0, orientation="horizontal",
+                          key="-TR_ROTATION-", enable_events=True),
+            ],
+            [
+                sg.Button("Flip Vertical", key="-TR_FLIP_VERTICAL-"),
+                sg.Push(),
+                sg.Button("Flip Horizontal", key="-TR_FLIP_HORIZONTAL-")
+            ]
+        ]
+
+        position_col = [
+            [
+                sg.Push(),
+                sg.Button("↑", size=(2, 1), key="-POS_UP-"),
+                sg.Push()
+            ],
+            [
+                sg.Button("←", size=(2, 1), key="-POS_LEFT-"),
+                sg.Push(),
+                sg.Button("→", size=(2, 1), key="-POS_RIGHT-"),
+            ],
+            [
+                sg.Push(),
+                sg.Button("↓", size=(2, 1), key="-POS_DOWN-"),
+                sg.Push()
+            ],
+        ]
+
+        full_scale_col = [
+            [
+                sg.Push(),
+                sg.Button("↑", key="-SCALE_UP-"),
+                sg.Push()
+            ],
+            [
+                sg.Push(),
+                sg.Button("↓", key="-SCALE_DOWN-"),
+                sg.Push()
+            ]
+        ]
+
+        x_scale_col = [
+            [
+                sg.Push(),
+                sg.Button("↑", key="-SCALE_X_UP-"),
+                sg.Push()
+            ],
+            [
+                sg.Push(),
+                sg.Button("↓", key="-SCALE_X_DOWN-"),
+                sg.Push()
+            ]
+        ]
+
+        y_scale_col = [
+            [
+                sg.Push(),
+                sg.Button("↑", key="-SCALE_Y_UP-"),
+                sg.Push()
+            ],
+            [
+                sg.Push(),
+                sg.Button("↓", key="-SCALE_Y_DOWN-"),
+                sg.Push()
+            ]
+        ]
+
+        scale_col = [
+            [
+                sg.Column([[sg.Frame("Scale X", layout=x_scale_col)]]),
+                sg.Column([[sg.Frame("Scale Y", layout=y_scale_col)]]),
+                sg.Column([[sg.Frame("Scale XY", layout=full_scale_col)]])
+            ]
+        ]
+
+        orientation_frame = sg.Frame("Orientation", layout=orientation_col)
+        positon_frame = sg.Frame("Position", layout=position_col)
+        scale_frame = sg.Frame("Scale", layout=scale_col)
+
         transformations_tab = [
             [
-                sg.Text("Brightness", pad=(10, (15, 0))),
-                sg.Slider((-180, 180), 0, orientation="horizontal",
-                          key="-POS_ROTATION-", enable_events=True),
+                sg.Column([[orientation_frame]]),
+                sg.Column([[positon_frame]]),
+                sg.Column([[scale_frame]])
             ]
         ]
 
@@ -161,7 +247,7 @@ class UserInterface():
                 sg.Button("↑", key="-WS_UP-", enable_events=True),
                 sg.Button("↓", key="-WS_DOWN-", enable_events=True),
                 sg.Push(),
-                sg.Button("X", key="-WS_DELETE-", enable_events=True),
+                sg.Button("x", key="-WS_DELETE-", enable_events=True),
                 sg.Button("+", key="-WS_ADD-", enable_events=True)
             ]
         ]

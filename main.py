@@ -46,10 +46,10 @@ while True:
     if event == "-WS_LAYERS-":
         curr_image = ws.get_layer(values["-WS_LAYERS-"][0])
         props = curr_image.get_properties()
-        ui.update_value("-POS_ROTATION-", value=props.rotation)
+        ui.update_value("-TR_ROTATION-", value=props.rotation)
         ui.update_value("-S_BRIGHTNESS-", value=(props.brightness - 1) * 100)
         ui.update_value("-S_CONTRAST-", value=(props.contrast - 1) * 100)
-        ui.update_value("-S_SATURATION-", value=(props.color_level - 1) * 100)
+        ui.update_value("-S_SATURATION-", value=(props.saturation - 1) * 100)
         ui.update_value("-S_SHARPNESS-", value=(props.sharpness - 1) * 100)
 
     if event == "-WS_UP-":
@@ -76,16 +76,22 @@ while True:
             ui.update_layers(ws)
             curr_image.clear()
 
-    if event == "-POS_ROTATION-":
+    if event == "-TR_ROTATION-":
         curr_image.rotate(values[event])
+
+    if event == "-TR_FLIP_VERTICAL-":
+        curr_image.flip_vertical()
+
+    if event == "-TR_FLIP_HORIZONTAL-":
+        curr_image.flip_horizontal()
 
     if event == "-S_BRIGHTNESS-":
         curr_image.apply_brightness(values[event] / 100 + 1)
 
-    if event == "-S_CONTRAST-":
-        curr_image.apply_color_level(values[event] / 100 + 1)
-
     if event == "-S_SATURATION-":
+        curr_image.apply_saturation(values[event] / 100 + 1)
+
+    if event == "-S_CONTRAST-":
         curr_image.apply_contrast(values[event] / 100 + 1)
 
     if event == "-S_SHARPNESS-":

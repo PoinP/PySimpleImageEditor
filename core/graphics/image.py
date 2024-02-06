@@ -11,7 +11,9 @@ class _Properties:
     brightness: float = 1.0
     contrast: float = 1.0
     sharpness: float = 1.0
-    color_level: float = 1.0
+    saturation: float = 1.0
+    flip_vertical: bool = False
+    flip_horizontal: bool = False
 
 
 @dataclass
@@ -19,7 +21,7 @@ class _Enchancers:
     brightness: ImageEnhance._Enhance
     contrast: ImageEnhance._Enhance
     sharpness: ImageEnhance._Enhance
-    color_level: ImageEnhance._Enhance
+    saturation: ImageEnhance._Enhance
 
 
 class Image:
@@ -27,16 +29,19 @@ class Image:
                  image: PILImage.Image | None = None,
                  mode: str | None = None) -> None:
         # TODO: Handle error
+        self.__original_image = None
         self.__image = None
 
         if path is not None:
-            self.__image = PILImage.open(path).convert("RGBA")
-            self.__image.load()
-            resample = PILImage.Resampling.BICUBIC
-            self.__image.thumbnail([500, 500], resample)
+            self.__original_image = PILImage.open(path).convert("RGBA")
+            self.__original_image.load()
 
         if image is not None and path is None:
-            self.__image = image
+            self.__original_image = image
+
+        resample = PILImage.Resampling.BICUBIC
+        self.__image = self.__original_image.copy()
+        self.__image.thumbnail([500, 500], resample)
 
         self.__reference = self.__image.copy()
         self.__mode = mode if mode is not None else "RGBA"
@@ -110,6 +115,16 @@ class Image:
         self.__props.rotation = angle
         self.__apply_all_properties()
 
+    def flip_horizontal(self) -> None:
+        should_flip = not self.__props.flip_horizontal
+        self.__props.flip_horizontal = should_flip
+        self.__apply_all_properties()
+
+    def flip_vertical(self) -> None:
+        should_flip = not self.__props.flip_vertical
+        self.__props.flip_vertical = should_flip
+        self.__apply_all_properties()
+
     def apply_brightness(self, coefficient: float) -> None:
         self.__props.brightness = coefficient
         self.__apply_all_properties()
@@ -122,8 +137,8 @@ class Image:
         self.__props.sharpness = coefficient
         self.__apply_all_properties()
 
-    def apply_color_level(self, coefficient: float) -> None:
-        self.__props.color_level = coefficient
+    def apply_saturation(self, coefficient: float) -> None:
+        self.__props.saturation = coefficient
         self.__apply_all_properties()
 
     def apply_negative(self) -> None:
@@ -163,11 +178,16 @@ class Image:
             image.paste(enhancers.contrast.enhance(props.contrast))
         if props.sharpness != 1.0:
             image.paste(enhancers.sharpness.enhance(props.sharpness))
-        if props.color_level != 1.0:
-            image.paste(enhancers.color_level.enhance(props.color_level))
+        if props.saturation != 1.0:
+            image.paste(enhancers.saturation.enhance(props.saturation))
 
         if props.rotation != 0:
             resample = PILImage.Resampling.BICUBIC
             image = image.rotate(props.rotation, resample, expand=True)
+
+        if props.flip_horizontal:
+            image = image.transpose(PILImage.Transpose.FLIP_TOP_BOTTOM)
+        if props.flip_vertical:
+            image = image.transpose(PILImage.Transpose.FLIP_LEFT_RIGHT)
 
         self.__image = image
