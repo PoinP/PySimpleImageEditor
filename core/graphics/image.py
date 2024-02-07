@@ -7,6 +7,7 @@ from dataclasses import dataclass
 
 @dataclass
 class _Properties:
+    size: (int, int) = (0, 0)
     rotation: float = 0.0
     brightness: float = 1.0
     contrast: float = 1.0
@@ -47,6 +48,7 @@ class Image:
         self.__mode = mode if mode is not None else "RGBA"
 
         self.__props = _Properties()
+        self.__props.size = self.get_size()
 
     def save(self, path: str, format: (str | None) = None) -> None:
         self.__image.save(path, format)
@@ -87,11 +89,11 @@ class Image:
             self.__convert("LA")
 
     #    Modifiers    #
-    def paste(self, image: "Image", box: tuple | None = None) -> None:
+    def paste(self, image: "Image", box: tuple[int, int] | None = None) -> None: # noqa
         self.__image.paste(image.__image, box, image.__image)
         # self.__reference = self.__image.copy()
 
-    def cropped_paste(self, image: "Image", box: tuple | None = None) -> None:
+    def cropped_paste(self, image: "Image", box: tuple[int, int] | None = None) -> None: # noqa
         width, height = image.get_size()
         ref_width, ref_height = image.__reference.size
 
@@ -100,7 +102,7 @@ class Image:
         offset_box = (width_offset, height_offset)
 
         if box is not None:
-            offset_box = (box[0] + offset_box[0], box[1], offset_box[1])
+            offset_box = (box[0] + offset_box[0], box[1] + offset_box[1])
 
         self.paste(image, offset_box)
 
@@ -114,6 +116,30 @@ class Image:
     def rotate(self, angle: float) -> None:
         self.__props.rotation = angle
         self.__apply_all_properties()
+
+    def resize(self, size: tuple[int | None, int | None]) -> None:
+        if size == (None, None):
+            return
+
+        x, y = size
+        curr_x, curr_y = self.get_size()
+
+        x = x or curr_x
+        y = y or curr_y
+
+        size = (x, y)
+        self.__props.size = size
+        self.__apply_all_properties()
+
+    def scale(self, scale: tuple[float | None, float | None]) -> None:
+        x, y = self.__props.size
+        scale_x, scale_y = scale
+
+        scale_x = scale_x or 1.0
+        scale_y = scale_y or 1.0
+
+        size = (int(x * scale_x), int(y * scale_y))
+        self.resize(size)
 
     def flip_horizontal(self) -> None:
         should_flip = not self.__props.flip_horizontal
@@ -181,13 +207,17 @@ class Image:
         if props.saturation != 1.0:
             image.paste(enhancers.saturation.enhance(props.saturation))
 
+        if props.flip_horizontal:
+            image = image.transpose(PILImage.Transpose.FLIP_LEFT_RIGHT)
+        if props.flip_vertical:
+            image = image.transpose(PILImage.Transpose.FLIP_TOP_BOTTOM)
+
+        if props.size != self.__reference.size:
+            resample = PILImage.Resampling.BICUBIC
+            image = image.resize(props.size, resample, reducing_gap=True)
+
         if props.rotation != 0:
             resample = PILImage.Resampling.BICUBIC
             image = image.rotate(props.rotation, resample, expand=True)
-
-        if props.flip_horizontal:
-            image = image.transpose(PILImage.Transpose.FLIP_TOP_BOTTOM)
-        if props.flip_vertical:
-            image = image.transpose(PILImage.Transpose.FLIP_LEFT_RIGHT)
 
         self.__image = image

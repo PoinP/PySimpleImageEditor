@@ -14,6 +14,8 @@ image = Image(os.path.join("assets", "damn.png"))
 image2 = Image(os.path.join("assets", "robot.png"))
 image3 = Image(os.path.join("assets", "lake.jpg"))
 
+pos_map: dict[str, tuple[int, int]] = {}
+
 ws = Workspace()
 ws.add_layer(image2)
 ws.add_layer(image)
@@ -23,6 +25,7 @@ ui.update_layers(ws)
 canvas = CheckeredBackground((500, 500))
 thumbnail = CheckeredBackground((500, 500))
 
+
 curr_image = None
 
 while True:
@@ -30,7 +33,11 @@ while True:
     thumbnail.reset()
 
     for (name, img) in reversed(ws.get_layers()):
-        canvas.cropped_paste(img)
+        offset = (0, 0)
+        if name in pos_map:
+            offset = pos_map[name]
+
+        canvas.cropped_paste(img, offset)
 
     ui.update_image(canvas)
 
@@ -44,7 +51,8 @@ while True:
         break
 
     if event == "-WS_LAYERS-":
-        curr_image = ws.get_layer(values["-WS_LAYERS-"][0])
+        curr_layer_name = ui.get_current_layer()
+        curr_image = ws.get_layer(curr_layer_name)
         props = curr_image.get_properties()
         ui.update_value("-TR_ROTATION-", value=props.rotation)
         ui.update_value("-S_BRIGHTNESS-", value=(props.brightness - 1) * 100)
@@ -76,8 +84,54 @@ while True:
             ui.update_layers(ws)
             curr_image.clear()
 
+    if event == "-POS_UP-":
+        curr_layer_name = ui.get_current_layer()
+        if curr_layer_name not in pos_map:
+            pos_map[curr_layer_name] = (0, 0)
+        x, y = pos_map[curr_layer_name]
+        pos_map[curr_layer_name] = (x, y - 5)
+
+    if event == "-POS_DOWN-":
+        curr_layer_name = ui.get_current_layer()
+        if curr_layer_name not in pos_map:
+            pos_map[curr_layer_name] = (0, 0)
+        x, y = pos_map[curr_layer_name]
+        pos_map[curr_layer_name] = (x, y + 5)
+
+    if event == "-POS_LEFT-":
+        curr_layer_name = ui.get_current_layer()
+        if curr_layer_name not in pos_map:
+            pos_map[curr_layer_name] = (0, 0)
+        x, y = pos_map[curr_layer_name]
+        pos_map[curr_layer_name] = (x - 5, y)
+
+    if event == "-POS_RIGHT-":
+        curr_layer_name = ui.get_current_layer()
+        if curr_layer_name not in pos_map:
+            pos_map[curr_layer_name] = (0, 0)
+        x, y = pos_map[curr_layer_name]
+        pos_map[curr_layer_name] = (x + 5, y)
+
+    if event == "-SCALE_UP-":
+        curr_image.scale((1.1, 1.1))
+
+    if event == "-SCALE_DOWN-":
+        curr_image.scale((0.9, 0.9))
+
+    if event == "-SCALE_X_UP-":
+        curr_image.scale((1.1, 1.0))
+
+    if event == "-SCALE_X_DOWN-":
+        curr_image.scale((0.9, 1.0))
+
+    if event == "-SCALE_Y_UP-":
+        curr_image.scale((1.0, 1.1))
+
+    if event == "-SCALE_Y_DOWN-":
+        curr_image.scale((1.0, 0.9))
+
     if event == "-TR_ROTATION-":
-        curr_image.rotate(values[event])
+        curr_image.rotate(-values[event])
 
     if event == "-TR_FLIP_VERTICAL-":
         curr_image.flip_vertical()
