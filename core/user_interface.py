@@ -1,6 +1,7 @@
-import PySimpleGUI as sg
-from core.workspace import Workspace
 from core.graphics.image import Image
+from core.workflow.workspace import Workspace
+
+import PySimpleGUI as sg
 
 
 class UserInterface():
@@ -26,6 +27,12 @@ class UserInterface():
     def destroy(self) -> None:
         return self.__window.close()
 
+    def disable(self) -> None:
+        self.__enable(False)
+
+    def enable(self) -> None:
+        self.__enable(True)
+
     def open_popup(self, message: str) -> str:
         image_formats = ".jpeg, .bmp .gif .jpg .png .ico .ppm"
         file_types = ("Image Files", image_formats)
@@ -38,6 +45,9 @@ class UserInterface():
 
     def show_popup(self, *args, title: str) -> None:
         sg.popup(*args, title=title)
+
+    def input_popup(self, message: str) -> str:
+        return sg.popup_get_text(message)
 
     def update_value(self, key: str, *args, **kwargs) -> None:
         self.__window[key].update(*args, **kwargs)
@@ -79,6 +89,16 @@ class UserInterface():
     def get_window(self) -> sg.Window:
         return self.__window
 
+    def __enable(self, status: bool) -> None:
+        for key in self.__window.key_dict:
+            if not isinstance(key, str):
+                continue
+
+            if not key.startswith("-") or "WS" in key:
+                continue
+
+            self.__window[key].update(disabled=not status)
+
     def __create_menu(self) -> list[list[sg.Element]]:
         menu_def = [
             [
@@ -110,7 +130,7 @@ class UserInterface():
             ]
         ]
 
-        return [[sg.Menu(menu_def, key="-MENU-")]]
+        return [[sg.Menu(menu_def)]]
 
     def __create_tabs(self) -> list[list[sg.Element]]:
         enchancers_tab = self.__create_enchancers_tab()
@@ -151,7 +171,7 @@ class UserInterface():
             [
                 sg.Button("↑", key="-WS_UP-", enable_events=True),
                 sg.Button("↓", key="-WS_DOWN-", enable_events=True),
-                sg.Push(),
+                sg.Button("R", key="-WS_RENAME-", enable_events=True),
                 sg.Button("x", key="-WS_DELETE-", enable_events=True),
                 sg.Button("+", key="-WS_ADD-", enable_events=True)
             ]
@@ -204,9 +224,11 @@ class UserInterface():
 
         enchancers_tab = [
             [
+                sg.Push(),
                 sg.Column([[brightness_frame], [contrast_frame]]),
                 sg.Push(),
                 sg.Column([[saturation_frame], [sharpness_frame]]),
+                sg.Push()
             ]
         ]
 

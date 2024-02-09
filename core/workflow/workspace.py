@@ -3,7 +3,7 @@ from core.graphics.image import Image
 
 class Workspace:
     def __init__(self) -> None:
-        self.__layers: list[(str, Image)] = []
+        self.__layers: list[tuple(str, Image)] = []
 
     def __len__(self) -> int:
         return len(self.__layers)
@@ -22,14 +22,32 @@ class Workspace:
 
     def add_layer(self, image: Image, layer_name: str | None = None) -> None:
         if layer_name is None:
-            layer_name = f"Layer ({len(self)})"
+            layer_name = "Layer"
 
-        layers_names = [name for (name, image) in self.__layers]
-        if layer_name in layers_names:
-            name_count = layers_names.count(layer_name)
+        name_count = self.__count_layer_namings(layer_name)
+
+        if (name_count != 0):
             layer_name = layer_name + f" ({name_count})"
 
         self.__layers.append((layer_name, image))
+
+    def rename_layer(self, old_name: str, new_name: str) -> str:
+        layer_index = None
+        layers_names = self.get_layers_names()
+
+        try:
+            layer_index = layers_names.index(old_name)
+        except ValueError:
+            return
+
+        name_count = self.__count_layer_namings(new_name)
+
+        if (name_count != 0):
+            new_name = new_name + f" ({name_count})"
+
+        name, image = self.__layers[layer_index]
+        self.__layers[layer_index] = (new_name, image)
+        return new_name
 
     def update_layer(self, layer_name: str, image: Image) -> None:
         for i in range(len(self)):
@@ -81,3 +99,13 @@ class Workspace:
         temp_layer = self.__layers[first_index]
         self.__layers[first_index] = self.__layers[second_index]
         self.__layers[second_index] = temp_layer
+
+    def __count_layer_namings(self, layer_name: str):
+        name_count = 0
+
+        layers_names = self.get_layers_names()
+        if layer_name in layers_names:
+            for name in layers_names:
+                name_count += name.count(layer_name)
+
+        return name_count

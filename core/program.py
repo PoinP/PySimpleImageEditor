@@ -1,9 +1,11 @@
 from core.graphics.image import Image
 from core.graphics.image import ImageNotRecognizedError
-from core.workspace import Workspace
 from core.graphics.checkered_background import CheckeredBackground
+
 from core.user_interface import UserInterface
-from core.undo_redo_stack import UndoRedoStack
+
+from core.workflow.workspace import Workspace
+from core.workflow.undo_redo_stack import UndoRedoStack
 
 import os
 import PySimpleGUI as sg
@@ -46,11 +48,23 @@ class Program():
             self.__render_view()
             self.__render_thumbnail()
 
+            if self.curr_image is None:
+                self.ui.disable()
+            else:
+                self.ui.enable()
+
             self.curr_event = self.ui.get_input(timeout=250)
 
             self.__handle_events()
 
         self.ui.destroy()
+
+    def __require_image(func):
+        def inner(*args, **kwargs):
+            if args[0].curr_image is not None:
+                func(*args, **kwargs)
+
+        return inner
 
     def __render_view(self):
         for (name, image) in reversed(self.ws.get_layers()):
@@ -140,9 +154,26 @@ class Program():
                 self.ui.update_layers(self.ws)
                 self.curr_image = None
 
+        if event == "-WS_RENAME-":
+            to_rename = self.ui.get_current_layer()
+
+            if to_rename is not None:
+                new_name = self.ui.input_popup("Name the layer")
+
+                if new_name == "":
+                    new_name = "Layer"
+
+                new_name = self.ws.rename_layer(to_rename, new_name)
+                self.action_stack.refresh_layer_name(to_rename, new_name)
+                self.action_stack.clear_redo_stack()
+                self.ui.update_layers(self.ws)
+                self.ui.select_layer(new_name)
+                self.curr_image = self.ws.get_layer(new_name)
+
         if event == "-WS_ADD-":
             self.__open_image()
 
+    @__require_image
     def __handle_postion(self) -> None:
         event, values = self.curr_event
 
@@ -159,6 +190,7 @@ class Program():
 
         self.set_undo = True
 
+    @__require_image
     def __handle_scale(self) -> None:
         event, values = self.curr_event
 
@@ -179,6 +211,7 @@ class Program():
 
         self.set_undo = True
 
+    @__require_image
     def __handle_transformation(self) -> None:
         event, values = self.curr_event
 
@@ -193,6 +226,7 @@ class Program():
 
         self.set_undo = True
 
+    @__require_image
     def __handle_slider(self) -> None:
         event, values = self.curr_event
 
@@ -209,6 +243,7 @@ class Program():
 
         self.set_undo = True
 
+    @__require_image
     def __handle_crop(self) -> None:
         event, values = self.curr_event
 
@@ -225,6 +260,7 @@ class Program():
 
         self.set_undo = True
 
+    @__require_image
     def __handle_filters(self) -> None:
         event, values = self.curr_event
 
@@ -237,6 +273,7 @@ class Program():
 
         self.set_undo = True
 
+    @__require_image
     def __handle_adjustments(self) -> None:
         event, values = self.curr_event
 
@@ -290,6 +327,9 @@ class Program():
             self.__save_image()
         elif event == "Save as...":
             self.__save_image_as()
+
+        if self.curr_image is None:
+            return
 
         if event == "Convert to RGB":
             self.curr_image.convert_to_rgb()

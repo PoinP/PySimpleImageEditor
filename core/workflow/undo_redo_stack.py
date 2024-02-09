@@ -27,6 +27,12 @@ class UndoRedoStack():
         layer_name, image = action
         self.__redo_stack.append((layer_name, image.copy()))
 
+    def refresh_layer_name(self, old_name: str, new_name: str) -> None:
+        for idx in range(len(self.__undo_stack)):
+            if self.__undo_stack[idx][0] == old_name:
+                name, image = self.__undo_stack[idx]
+                self.__undo_stack[idx] = (new_name, image)
+
     def clear_references(self, layer_name: str) -> None:
         def is_not_layer(x):
             return x[0] != layer_name
