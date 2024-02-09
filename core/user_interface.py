@@ -26,6 +26,19 @@ class UserInterface():
     def destroy(self) -> None:
         return self.__window.close()
 
+    def open_popup(self, message: str) -> str:
+        image_formats = ".jpeg, .bmp .gif .jpg .png .ico .ppm"
+        file_types = ("Image Files", image_formats)
+        return sg.popup_get_file(message, file_types=(file_types,))
+
+    def save_popup(self, message: str) -> str:
+        file_types = (("PNG", "*.png"), ("GIF", "*.gif"),
+                      ("JPEG", "*.jpeg, *.jpg"),)
+        return sg.popup_get_file(message, file_types=file_types, save_as=True)
+
+    def show_popup(self, *args, title: str) -> None:
+        sg.popup(*args, title=title)
+
     def update_value(self, key: str, *args, **kwargs) -> None:
         self.__window[key].update(*args, **kwargs)
 
@@ -73,7 +86,7 @@ class UserInterface():
                 [
                     "Open an image",
                     "Save",
-                    "Save as"
+                    "Save as..."
                 ]
             ],
             [
@@ -83,7 +96,6 @@ class UserInterface():
                     "Redo",
                     "Convert",
                     [
-                        "Convert to Grayscale",
                         "Convert to RGB",
                         "Convert to RGBA"
                     ],
@@ -133,7 +145,7 @@ class UserInterface():
                 sg.Push()
             ],
             [
-                sg.Listbox(values=[], size=(15, 15), key="-WS_LAYERS-",
+                sg.Listbox(values=[], size=(20, 15), key="-WS_LAYERS-",
                            no_scrollbar=True, enable_events=True),
             ],
             [
@@ -156,28 +168,32 @@ class UserInterface():
         brightness = [
             [
                 sg.Slider((-100, 500), 0, orientation="horizontal",
-                          key="-S_BRIGHTNESS-", enable_events=True)
+                          key="-S_BRIGHTNESS-", enable_events=True,
+                          size=(30, 20))
             ]
         ]
 
         contrast = [
             [
                 sg.Slider((-100, 500), 0, orientation="horizontal",
-                          key="-S_CONTRAST-", enable_events=True)
+                          key="-S_CONTRAST-", enable_events=True,
+                          size=(30, 20))
             ]
         ]
 
         saturation = [
             [
                 sg.Slider((-200, 500), 0, orientation="horizontal",
-                          k="-S_SATURATION-", enable_events=True)
+                          k="-S_SATURATION-", enable_events=True,
+                          size=(30, 20))
             ]
         ]
 
         sharpness = [
             [
                 sg.Slider((-200, 500), 0, orientation="horizontal",
-                          k="-S_SHARPNESS-", enable_events=True)
+                          k="-S_SHARPNESS-", enable_events=True,
+                          size=(30, 20))
             ]
         ]
 
@@ -188,11 +204,9 @@ class UserInterface():
 
         enchancers_tab = [
             [
-                sg.Push(),
                 sg.Column([[brightness_frame], [contrast_frame]]),
                 sg.Push(),
                 sg.Column([[saturation_frame], [sharpness_frame]]),
-                sg.Push()
             ]
         ]
 
@@ -207,7 +221,8 @@ class UserInterface():
             ],
             [
                 sg.Slider((-180, 180), 0, orientation="horizontal",
-                          key="-TR_ROTATION-", enable_events=True),
+                          key="-TR_ROTATION-", enable_events=True,
+                          expand_y=True, tick_interval=90, size=(30, 20))
             ],
             [
                 sg.Button("Flip Vertical", key="-TR_FLIP_VERTICAL-"),
@@ -287,9 +302,11 @@ class UserInterface():
 
         transformations_tab = [
             [
+                sg.Push(),
                 sg.Column([[orientation_frame]]),
                 sg.Column([[positon_frame]]),
-                sg.Column([[scale_frame]])
+                sg.Column([[scale_frame]]),
+                sg.Push()
             ]
         ]
 
@@ -317,28 +334,41 @@ class UserInterface():
         filters_col = [
             [
                 sg.Push(),
-                sg.Button("Grayscale"),
-                sg.Button("Negative"),
-                sg.Button("Monochrome"),
+                sg.Button("Grayscale", key="-F_GRAYSCALE-"),
+                sg.Button("Negative", key="-F_NEGATIVE-"),
+                sg.Button("Monochrome", key="-F_MONOCHROME-"),
                 sg.Push()
             ],
             [
                 sg.Push(),
-                sg.Button("Screen"),
-                sg.Button("Multiply"),
-                sg.Button("Color Dodge"),
+                sg.Button("Screen", key="-F_SCREEN-"),
+                sg.Button("Multiply", key="-F_MULTIPLY-"),
+                sg.Button("Color Dodge", key="-F_COLOR_DODGE-"),
                 sg.Push()
+            ]
+        ]
+
+        adjustments_col = [
+            [
+                sg.Push(),
+                sg.Button("Center", key="-A_CENTER-"),
+                sg.Push()
+            ],
+            [
+                sg.Button("Shrink to fit", key="-A_SHRINK_TO_FIT-"),
             ]
         ]
 
         crop_frame = sg.Frame("Crop", layout=crop_col)
         filter_frame = sg.Frame("Filters", layout=filters_col)
+        adjustment_frame = sg.Frame("Adjustments", layout=adjustments_col)
 
         modifications_tab = [
             [
                 sg.Push(),
                 sg.Column([[crop_frame]]),
                 sg.Column([[filter_frame]]),
+                sg.Column([[adjustment_frame]]),
                 sg.Push()
             ]
         ]

@@ -1,3 +1,4 @@
+from PIL import UnidentifiedImageError
 from PIL import ImageOps
 from PIL import Image as PILImage
 from PIL import ImageTk, ImageEnhance
@@ -8,8 +9,9 @@ from dataclasses import dataclass
 
 @dataclass
 class _Properties:
-    size: tuple[int, int] = (0, 0)
-    crop: tuple[int, int, int, int] = (0, 0)
+    resize: tuple[int, int] = (0, 0)
+    offset: tuple[int, int] = (0, 0)
+    crop: tuple[int, int, int, int] = (0, 0, 0, 0)
     rotation: float = 0.0
     brightness: float = 1.0
     contrast: float = 1.0
@@ -27,37 +29,39 @@ class _Enchancers:
     saturation: ImageEnhance._Enhance
 
 
+class ImageNotRecognizedError(Exception):
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+
+
 class Image:
     def __init__(self, path: str | None = None,
                  image: PILImage.Image | None = None,
                  mode: str | None = None) -> None:
         # TODO: Handle error
-        self.__original_image = None
         self.__image = None
 
         if path is not None:
-            self.__original_image = PILImage.open(path).convert("RGBA")
-            self.__original_image.load()
+            try:
+                self.__image = PILImage.open(path).convert("RGBA")
+                self.__image.load()
+            except UnidentifiedImageError as e:
+                raise ImageNotRecognizedError(*e.args)
 
         if image is not None and path is None:
-            self.__original_image = image
-
-        resample = PILImage.Resampling.BICUBIC
-        self.__image = self.__original_image.copy()
-        self.__image.thumbnail([500, 500], resample)
+            self.__image = image.copy()
 
         self.__reference = self.__image.copy()
         self.__mode = mode if mode is not None else "RGBA"
 
         self.__props = _Properties()
-        self.__props.size = self.get_size()
+        self.__props.resize = self.get_size()
 
     def save(self, path: str, format: (str | None) = None) -> None:
         self.__image.save(path, format)
 
     def copy(self) -> "Image":
         copyImage = Image(image=self.__reference.copy())
-        copyImage.__original_image = self.__original_image
         copyImage.__mode = self.__mode
         copyImage.__props = copy.deepcopy(self.__props)
         copyImage.__apply_all_properties()
@@ -113,13 +117,30 @@ class Image:
 
         self.paste(image, offset_box)
 
+    def shrink_to_fit(self, canvas_size: tuple[int, int]) -> None:
+        resample = PILImage.Resampling.BICUBIC
+        self.__image.thumbnail((500, 500), resample)
+        self.__reference.thumbnail((500, 500), resample)
+        self.__props.resize = self.__reference.size
+        self.__apply_all_properties()
+
+    def center(self, canvas_size: tuple[int, int]) -> None:
+        width, height = self.__props.resize
+        canvas_width, canvas_height = canvas_size
+
+        x, y = width // 2, height // 2
+        canvas_x, canvas_y = (canvas_width // 2, canvas_height // 2)
+
+        xOffset = canvas_x - x
+        yOffset = canvas_y - y
+
+        self.__props.offset = (xOffset, yOffset)
+
     def replace(self, image: "Image"):
         self.paste(image)
         self.__props = copy.deepcopy(image.__props)
 
     def clear(self) -> None:
-        original_size = self.__original_image.size
-        self.__original_image = PILImage.new(self.__mode, original_size)
         self.__image = PILImage.new(self.__mode, self.get_size())
         self.__reference = self.__image.copy()
         self.__props = _Properties()
@@ -128,15 +149,11 @@ class Image:
         self.__image = self.__reference.copy()
 
     def clear_effects(self) -> None:
-        resample = PILImage.Resampling.BICUBIC
-        self.__image = self.__original_image.convert("RGBA")
-        self.__image.thumbnail([500, 500], resample)
-
-        self.__reference = self.__image.copy()
-        self.__mode = "RGBA"
-
+        old_offset = self.__props.offset
         self.__props = _Properties()
-        self.__props.size = self.get_size()
+        self.__props.offset = old_offset
+        self.__props.resize = self.__reference.size
+        self.__apply_all_properties()
 
     def rotate(self, angle: float) -> None:
         self.__props.rotation = angle
@@ -147,17 +164,26 @@ class Image:
             return
 
         x, y = size
-        curr_x, curr_y = self.get_size()
+        curr_x, curr_y = self.__props.resize
 
         x = x or curr_x
         y = y or curr_y
 
         size = (x, y)
-        self.__props.size = size
+        self.__props.resize = size
         self.__apply_all_properties()
 
+    def set_offset(self, offset: tuple[int | None, int | None]) -> None:
+        x, y = self.__props.offset
+        x_offset, y_offset = offset
+
+        x_offset = x_offset or 0
+        y_offset = y_offset or 0
+
+        self.__props.offset = (x + x_offset, y + y_offset)
+
     def scale(self, scale: tuple[float | None, float | None]) -> None:
-        x, y = self.__props.size
+        x, y = self.__props.resize
         scale_x, scale_y = scale
 
         scale_x = scale_x or 1.0
@@ -166,16 +192,22 @@ class Image:
         size = (int(x * scale_x), int(y * scale_y))
         self.resize(size)
 
-    def crop(self, crop: tuple[int, int, int, int]) -> None:
-        x, y = self.__props.size
+    def crop(self, crop: tuple[int | None, int | None,
+                               int | None, int | None]) -> None:
+        x, y, xx, yy = self.__props.crop
         crop_x, crop_y, crop_xx, crop_yy = crop
 
         crop_x = crop_x or 0
         crop_y = crop_y or 0
-        crop_xx = crop_xx or x
-        crop_yy = crop_yy or y
+        crop_xx = crop_xx or 0
+        crop_yy = crop_yy or 0
 
-        self.__props.crop = (crop_x, crop_y, crop_xx, crop_yy)
+        crop = (x + crop_x, y + crop_y, xx + crop_xx, yy + crop_yy)
+
+        # if crop[0] >= crop[2] or crop[1] >= crop[3]:
+        #     return
+
+        self.__props.crop = crop
         self.__apply_all_properties()
 
     def flip_horizontal(self) -> None:
@@ -207,7 +239,7 @@ class Image:
     def apply_negative(self) -> None:
         self.__mode = "RGB"
         self.__reference = self.__reference.convert("RGB")
-        self.__reference = ImageOps.invert(self.__reference)
+        self.__reference = ImageOps.invert(self.__reference).convert("RGBA")
         self.__apply_all_properties()
 
     def print_data(self) -> None:
@@ -251,12 +283,15 @@ class Image:
         if props.flip_vertical:
             image = image.transpose(PILImage.Transpose.FLIP_TOP_BOTTOM)
 
-        if props.size != self.__reference.size:
+        if props.resize != self.__reference.size:
             resample = PILImage.Resampling.BICUBIC
-            image = image.resize(props.size, resample, reducing_gap=True)
+            image = image.resize(props.resize, resample, reducing_gap=True)
 
-        # if props.crop != self.__reference.size:
-        # image = image.crop(props.crop)
+        if props.crop != (0, 0, 0, 0):
+            x, y, xx, yy = 0, 0, *props.resize
+            crop_x, crop_y, crop_xx, crop_yy = props.crop
+            crop = (x + crop_x, y + crop_y, xx - crop_xx, yy - crop_yy)
+            image = image.crop(crop)
 
         if props.rotation != 0:
             resample = PILImage.Resampling.BICUBIC

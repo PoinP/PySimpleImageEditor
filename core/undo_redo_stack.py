@@ -2,7 +2,7 @@ from core.graphics.image import Image
 
 from collections import deque
 
-Action = tuple[str, int]
+Action = tuple[str, Image]
 
 
 class UndoRedoStack():
@@ -14,14 +14,14 @@ class UndoRedoStack():
         return f"Undo: {self.__undo_stack}, Redo: {self.__redo_stack}"
 
     def add_undo_action(self, action: tuple[str, Image]) -> None:
-        if len(self.__undo_stack) > 10:
+        if len(self.__undo_stack) > 20:
             self.__undo_stack.popleft()
 
         layer_name, image = action
         self.__undo_stack.append((layer_name, image.copy()))
 
     def add_redo_action(self, action: tuple[str, Image]):
-        if len(self.__undo_stack) > 10:
+        if len(self.__undo_stack) > 20:
             self.__redo_stack.popleft()
 
         layer_name, image = action
