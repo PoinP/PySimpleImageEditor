@@ -20,9 +20,7 @@ class Workspace:
     def delete_layer(self, name: str) -> None:
         self.__layers = list(filter(lambda x: x[0] != name, self.__layers))
 
-    def add_layer(self, image: Image, name: str | None = None) -> None:
-        layer_name = name
-
+    def add_layer(self, image: Image, layer_name: str | None = None) -> None:
         if layer_name is None:
             layer_name = f"Layer ({len(self)})"
 
@@ -32,6 +30,13 @@ class Workspace:
             layer_name = layer_name + f" ({name_count})"
 
         self.__layers.append((layer_name, image))
+
+    def update_layer(self, layer_name: str, image: Image) -> None:
+        for i in range(len(self)):
+            name, img = self.__layers[i]
+            if name == layer_name:
+                self.__layers[i] = (name, image)
+                return
 
     def move_layer_up(self, name: str) -> None:
         layers_names = self.get_layers_names()

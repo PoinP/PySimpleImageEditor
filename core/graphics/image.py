@@ -2,12 +2,14 @@ from PIL import ImageOps
 from PIL import Image as PILImage
 from PIL import ImageTk, ImageEnhance
 
+import copy
 from dataclasses import dataclass
 
 
 @dataclass
 class _Properties:
-    size: (int, int) = (0, 0)
+    size: tuple[int, int] = (0, 0)
+    crop: tuple[int, int, int, int] = (0, 0)
     rotation: float = 0.0
     brightness: float = 1.0
     contrast: float = 1.0
@@ -54,7 +56,12 @@ class Image:
         self.__image.save(path, format)
 
     def copy(self) -> "Image":
-        return Image(image=self.__image)
+        copyImage = Image(image=self.__reference.copy())
+        copyImage.__original_image = self.__original_image
+        copyImage.__mode = self.__mode
+        copyImage.__props = copy.deepcopy(self.__props)
+        copyImage.__apply_all_properties()
+        return copyImage
 
     #    Accessors    #
     def get_base_image(self) -> PILImage:
@@ -90,8 +97,8 @@ class Image:
 
     #    Modifiers    #
     def paste(self, image: "Image", box: tuple[int, int] | None = None) -> None: # noqa
-        self.__image.paste(image.__image, box, image.__image)
-        # self.__reference = self.__image.copy()
+        mask = image.__image
+        self.__image.paste(image.__image, box, mask)
 
     def cropped_paste(self, image: "Image", box: tuple[int, int] | None = None) -> None: # noqa
         width, height = image.get_size()
@@ -106,12 +113,30 @@ class Image:
 
         self.paste(image, offset_box)
 
+    def replace(self, image: "Image"):
+        self.paste(image)
+        self.__props = copy.deepcopy(image.__props)
+
     def clear(self) -> None:
+        original_size = self.__original_image.size
+        self.__original_image = PILImage.new(self.__mode, original_size)
         self.__image = PILImage.new(self.__mode, self.get_size())
         self.__reference = self.__image.copy()
+        self.__props = _Properties()
 
     def reset(self) -> None:
         self.__image = self.__reference.copy()
+
+    def clear_effects(self) -> None:
+        resample = PILImage.Resampling.BICUBIC
+        self.__image = self.__original_image.convert("RGBA")
+        self.__image.thumbnail([500, 500], resample)
+
+        self.__reference = self.__image.copy()
+        self.__mode = "RGBA"
+
+        self.__props = _Properties()
+        self.__props.size = self.get_size()
 
     def rotate(self, angle: float) -> None:
         self.__props.rotation = angle
@@ -141,6 +166,18 @@ class Image:
         size = (int(x * scale_x), int(y * scale_y))
         self.resize(size)
 
+    def crop(self, crop: tuple[int, int, int, int]) -> None:
+        x, y = self.__props.size
+        crop_x, crop_y, crop_xx, crop_yy = crop
+
+        crop_x = crop_x or 0
+        crop_y = crop_y or 0
+        crop_xx = crop_xx or x
+        crop_yy = crop_yy or y
+
+        self.__props.crop = (crop_x, crop_y, crop_xx, crop_yy)
+        self.__apply_all_properties()
+
     def flip_horizontal(self) -> None:
         should_flip = not self.__props.flip_horizontal
         self.__props.flip_horizontal = should_flip
@@ -168,8 +205,10 @@ class Image:
         self.__apply_all_properties()
 
     def apply_negative(self) -> None:
-        # TODO: FIX
-        self.__image = ImageOps.invert(self.__image)
+        self.__mode = "RGB"
+        self.__reference = self.__reference.convert("RGB")
+        self.__reference = ImageOps.invert(self.__reference)
+        self.__apply_all_properties()
 
     def print_data(self) -> None:
         width = self.__image.width
@@ -185,7 +224,7 @@ class Image:
             return
 
         self.__mode = mode
-        self.__reference = self.__reference.convert(mode)
+        self.__reference = self.__reference.convert(mode).convert("RGBA")
         self.__apply_all_properties()
 
     def __apply_all_properties(self) -> None:
@@ -215,6 +254,9 @@ class Image:
         if props.size != self.__reference.size:
             resample = PILImage.Resampling.BICUBIC
             image = image.resize(props.size, resample, reducing_gap=True)
+
+        # if props.crop != self.__reference.size:
+        # image = image.crop(props.crop)
 
         if props.rotation != 0:
             resample = PILImage.Resampling.BICUBIC
