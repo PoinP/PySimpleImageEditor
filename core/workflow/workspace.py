@@ -1,7 +1,14 @@
+"""
+The workspace handles the logic behind the layers and keeps track of them
+"""
+
 from core.graphics.image import Image
 
 
 class Workspace:
+    """
+    The heart of the layer manipulation
+    """
     def __init__(self) -> None:
         self.__layers: list[tuple(str, Image)] = []
 
@@ -15,7 +22,7 @@ class Workspace:
         return self.__layers
 
     def get_layers_names(self) -> list[str]:
-        return [name for (name, image) in self.__layers]
+        return [name for (name, _) in self.__layers]
 
     def delete_layer(self, name: str) -> None:
         self.__layers = list(filter(lambda x: x[0] != name, self.__layers))
@@ -26,7 +33,7 @@ class Workspace:
 
         name_count = self.__count_layer_namings(layer_name)
 
-        if (name_count != 0):
+        if name_count != 0:
             layer_name = layer_name + f" ({name_count})"
 
         self.__layers.append((layer_name, image))
@@ -38,20 +45,20 @@ class Workspace:
         try:
             layer_index = layers_names.index(old_name)
         except ValueError:
-            return
+            return ""
 
         name_count = self.__count_layer_namings(new_name)
 
-        if (name_count != 0):
+        if name_count != 0:
             new_name = new_name + f" ({name_count})"
 
-        name, image = self.__layers[layer_index]
+        _, image = self.__layers[layer_index]
         self.__layers[layer_index] = (new_name, image)
         return new_name
 
     def update_layer(self, layer_name: str, image: Image) -> None:
         for i in range(len(self)):
-            name, img = self.__layers[i]
+            name, _ = self.__layers[i]
             if name == layer_name:
                 self.__layers[i] = (name, image)
                 return

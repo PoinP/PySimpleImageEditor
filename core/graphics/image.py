@@ -1,10 +1,16 @@
-from PIL import UnidentifiedImageError
-from PIL import ImageOps
-from PIL import Image as PILImage
-from PIL import ImageTk, ImageEnhance
+"""
+A simple wrapper of some of the functionality that PIL
+offers. It makes editing pictures easier and enables
+for e distructionless editing of the pictures
+"""
 
 import copy
 from dataclasses import dataclass
+
+from PIL import ImageOps
+from PIL import Image as PILImage
+from PIL import ImageTk, ImageEnhance
+from PIL import UnidentifiedImageError
 
 
 @dataclass
@@ -38,7 +44,6 @@ class Image:
     def __init__(self, path: str | None = None,
                  image: PILImage.Image | None = None,
                  mode: str | None = None) -> None:
-        # TODO: Handle error
         self.__image = None
 
         if path is not None:
@@ -61,11 +66,11 @@ class Image:
         self.__image.save(path, format)
 
     def copy(self) -> "Image":
-        copyImage = Image(image=self.__reference.copy())
-        copyImage.__mode = self.__mode
-        copyImage.__props = copy.deepcopy(self.__props)
-        copyImage.__apply_all_properties()
-        return copyImage
+        copy_image = Image(image=self.__reference.copy())
+        copy_image.__mode = self.__mode
+        copy_image.__props = copy.deepcopy(self.__props)
+        copy_image.__apply_all_properties()
+        return copy_image
 
     #    Accessors    #
     def get_base_image(self) -> PILImage:
@@ -119,8 +124,8 @@ class Image:
 
     def shrink_to_fit(self, canvas_size: tuple[int, int]) -> None:
         resample = PILImage.Resampling.BICUBIC
-        self.__image.thumbnail((500, 500), resample)
-        self.__reference.thumbnail((500, 500), resample)
+        self.__image.thumbnail(canvas_size, resample)
+        self.__reference.thumbnail(canvas_size, resample)
         self.__props.resize = self.__reference.size
         self.__apply_all_properties()
 
@@ -131,10 +136,10 @@ class Image:
         x, y = width // 2, height // 2
         canvas_x, canvas_y = (canvas_width // 2, canvas_height // 2)
 
-        xOffset = canvas_x - x
-        yOffset = canvas_y - y
+        x_offset = canvas_x - x
+        y_offset = canvas_y - y
 
-        self.__props.offset = (xOffset, yOffset)
+        self.__props.offset = (x_offset, y_offset)
 
     def replace(self, image: "Image"):
         self.paste(image)

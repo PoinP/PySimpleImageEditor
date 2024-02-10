@@ -1,5 +1,10 @@
-from PIL import Image as PILImage
+"""
+Used to construct checkered patterns. Mainly used for
+the construction of a pattern similar to the one shown
+on the alpha channel of transperent images
+"""
 from PIL import ImageDraw
+from PIL import Image as PILImage
 
 from core.graphics.image import Image
 
@@ -25,8 +30,3 @@ class CheckeredBackground(Image):
                     draw.rectangle([i, j, height, width], fill=secondary_color)
 
         super().__init__(image=image, mode="RGB")
-
-    def clear(self) -> None:
-        self = CheckeredBackground(self.__size,
-                                   self.__main_color,
-                                   self.__secondary_color)

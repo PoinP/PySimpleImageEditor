@@ -1,6 +1,12 @@
-from core.graphics.image import Image
+"""
+The undo-redo stack handles the undo and redo operations of the program.
+A more tight method can be used by storing only the properties of an image,
+however this has some limitations on what effects a user can do undo on.
+"""
 
 from collections import deque
+
+from core.graphics.image import Image
 
 Action = tuple[str, Image]
 
@@ -28,9 +34,9 @@ class UndoRedoStack():
         self.__redo_stack.append((layer_name, image.copy()))
 
     def refresh_layer_name(self, old_name: str, new_name: str) -> None:
-        for idx in range(len(self.__undo_stack)):
-            if self.__undo_stack[idx][0] == old_name:
-                name, image = self.__undo_stack[idx]
+        for idx, layer in enumerate(self.__undo_stack):
+            if layer[0] == old_name:
+                _, image = self.__undo_stack[idx]
                 self.__undo_stack[idx] = (new_name, image)
 
     def clear_references(self, layer_name: str) -> None:

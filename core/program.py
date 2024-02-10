@@ -1,3 +1,11 @@
+"""
+Handles all of the events and connects all of the
+classes used on the project together
+"""
+
+import os
+import PySimpleGUI as sg
+
 from core.graphics.image import Image
 from core.graphics.image import ImageNotRecognizedError
 from core.graphics.checkered_background import CheckeredBackground
@@ -7,10 +15,16 @@ from core.user_interface import UserInterface
 from core.workflow.workspace import Workspace
 from core.workflow.undo_redo_stack import UndoRedoStack
 
-import os
-import PySimpleGUI as sg
 
 Event = (str, list[str])
+
+
+def _require_image(func: callable):
+    def inner(*args, **kwargs):
+        if args[0].curr_image is not None:
+            func(*args, **kwargs)
+
+    return inner
 
 
 class Program():
@@ -59,15 +73,8 @@ class Program():
 
         self.ui.destroy()
 
-    def __require_image(func):
-        def inner(*args, **kwargs):
-            if args[0].curr_image is not None:
-                func(*args, **kwargs)
-
-        return inner
-
     def __render_view(self):
-        for (name, image) in reversed(self.ws.get_layers()):
+        for (_, image) in reversed(self.ws.get_layers()):
             offset = image.get_properties().offset
             self.canvas.cropped_paste(image, offset)
 
@@ -83,7 +90,7 @@ class Program():
         self.ui.update_thumbnail(self.thumbnail.get_thumbnail((100, 100)))
 
     def __handle_events(self):
-        event, values = self.curr_event
+        event, _ = self.curr_event
 
         if event in (sg.WINDOW_CLOSED, "Cancel"):
             self.is_active = False
@@ -120,7 +127,7 @@ class Program():
             self.__hande_menu()
 
     def __handle_workspace(self):
-        event, values = self.curr_event
+        event, _ = self.curr_event
 
         if event == "-WS_LAYERS-":
             curr_layer_name = self.ui.get_current_layer()
@@ -160,6 +167,9 @@ class Program():
             if to_rename is not None:
                 new_name = self.ui.input_popup("Name the layer")
 
+                if new_name is None:
+                    return
+
                 if new_name == "":
                     new_name = "Layer"
 
@@ -173,9 +183,9 @@ class Program():
         if event == "-WS_ADD-":
             self.__open_image()
 
-    @__require_image
+    @_require_image
     def __handle_postion(self) -> None:
-        event, values = self.curr_event
+        event, _ = self.curr_event
 
         if event == "-POS_UP-":
             self.curr_image.set_offset((0, -5))
@@ -190,9 +200,9 @@ class Program():
 
         self.set_undo = True
 
-    @__require_image
+    @_require_image
     def __handle_scale(self) -> None:
-        event, values = self.curr_event
+        event, _ = self.curr_event
 
         if event == "-SCALE_UP-":
             self.curr_image.scale((1.1, 1.1))
@@ -211,7 +221,7 @@ class Program():
 
         self.set_undo = True
 
-    @__require_image
+    @_require_image
     def __handle_transformation(self) -> None:
         event, values = self.curr_event
 
@@ -226,7 +236,7 @@ class Program():
 
         self.set_undo = True
 
-    @__require_image
+    @_require_image
     def __handle_slider(self) -> None:
         event, values = self.curr_event
 
@@ -243,9 +253,9 @@ class Program():
 
         self.set_undo = True
 
-    @__require_image
+    @_require_image
     def __handle_crop(self) -> None:
-        event, values = self.curr_event
+        event, _ = self.curr_event
 
         if event == "-CROP_LEFT-":
             self.curr_image.crop((10, 0, 0, 0))
@@ -260,9 +270,9 @@ class Program():
 
         self.set_undo = True
 
-    @__require_image
+    @_require_image
     def __handle_filters(self) -> None:
-        event, values = self.curr_event
+        event, _ = self.curr_event
 
         if event == "-F_GRAYSCALE-":
             self.curr_image.convert_to_grayscale()
@@ -273,9 +283,9 @@ class Program():
 
         self.set_undo = True
 
-    @__require_image
+    @_require_image
     def __handle_adjustments(self) -> None:
-        event, values = self.curr_event
+        event, _ = self.curr_event
 
         if event == "-A_CENTER-":
             self.curr_image.center(self.canvas.get_size())
@@ -287,7 +297,7 @@ class Program():
         self.set_undo = True
 
     def __hande_menu(self) -> None:
-        event, values = self.curr_event
+        event, _ = self.curr_event
 
         if event == "Undo":
             undo_action = self.action_stack.undo()
@@ -392,16 +402,16 @@ class Program():
         if image_path is None:
             return
 
-        head, tail = os.path.split(image_path)
+        head, _ = os.path.split(image_path)
         if not os.path.exists(head):
             error_message = "The following path does not exist!:"
             self.ui.show_popup(error_message, image_path, title="Error")
-            return None
+            return
 
         to_save = Image(image=self.canvas.get_base_image())
         to_save.clear()
 
-        for (name, image) in reversed(self.ws.get_layers()):
+        for (_, image) in reversed(self.ws.get_layers()):
             offset = image.get_properties().offset
             to_save.cropped_paste(image, offset)
 
@@ -410,11 +420,11 @@ class Program():
         except ValueError:
             error_message = "Output format couldn't be determined for the following image:" # noqa
             self.ui.show_popup(error_message, image_path, title="Error")
-            return None
+            return
         except OSError:
             error_message = "An error occured while writing the image:"
             self.ui.show_popup(error_message, image_path, title="Error")
-            return None
+            return
 
         self.save_location = image_path
         self.ui.show_popup("Image saved successfully!", title="Success")

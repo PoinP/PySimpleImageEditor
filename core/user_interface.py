@@ -1,14 +1,18 @@
-from core.graphics.image import Image
-from core.workflow.workspace import Workspace
+"""
+This module builds the User Interface of the program
+"""
 
 import PySimpleGUI as sg
+
+from core.graphics.image import Image
+from core.workflow.workspace import Workspace
 
 
 class UserInterface():
     def __init__(self, title: str) -> None:
-        menu_layout = self.__create_menu()
-        tabs_layout = self.__create_tabs()
-        workspace_layout = self.__create_workspace((500, 500))
+        menu_layout = UserInterface.__create_menu()
+        tabs_layout = UserInterface.__create_tabs()
+        workspace_layout = UserInterface.__create_workspace((500, 500))
 
         layout = [menu_layout, tabs_layout, workspace_layout]
         self.__window = sg.Window(title, layout=layout, finalize=True)
@@ -16,7 +20,7 @@ class UserInterface():
         self.__event = ""
         self.__values = []
 
-    def get_input(self, timeout: int) -> tuple[str, list[str]]:
+    def get_input(self, timeout: int) -> tuple[str, any]:
         event, values = self.__window.read(timeout)
 
         self.__event = event
@@ -99,7 +103,8 @@ class UserInterface():
 
             self.__window[key].update(disabled=not status)
 
-    def __create_menu(self) -> list[list[sg.Element]]:
+    @staticmethod
+    def __create_menu() -> list[list[sg.Element]]:
         menu_def = [
             [
                 "File",
@@ -132,10 +137,11 @@ class UserInterface():
 
         return [[sg.Menu(menu_def)]]
 
-    def __create_tabs(self) -> list[list[sg.Element]]:
-        enchancers_tab = self.__create_enchancers_tab()
-        transformations_tab = self.__create_transfromations_tab()
-        modifications_tab = self.__create_modifications_tab()
+    @staticmethod
+    def __create_tabs() -> list[list[sg.Element]]:
+        enchancers_tab = UserInterface.__create_enchancers_tab()
+        transformations_tab = UserInterface.__create_transfromations_tab()
+        modifications_tab = UserInterface.__create_modifications_tab()
 
         return [[
             sg.Push(),
@@ -149,7 +155,8 @@ class UserInterface():
             sg.Push()
         ]]
 
-    def __create_workspace(self, viewer_size: tuple[int, int]) -> list[list[sg.Element]]: # noqa
+    @staticmethod
+    def __create_workspace(viewer_size: tuple[int, int]) -> list[list[sg.Element]]: # noqa
         image_viewer_column = [
             [
                 sg.Push(),
@@ -184,7 +191,8 @@ class UserInterface():
             ]
         ]
 
-    def __create_enchancers_tab(self) -> None:
+    @staticmethod
+    def __create_enchancers_tab() -> None:
         brightness = [
             [
                 sg.Slider((-100, 500), 0, orientation="horizontal",
@@ -234,7 +242,8 @@ class UserInterface():
 
         return enchancers_tab
 
-    def __create_transfromations_tab(self) -> None:
+    @staticmethod
+    def __create_transfromations_tab() -> None:
         orientation_col = [
             [
                 sg.Push(),
@@ -334,7 +343,8 @@ class UserInterface():
 
         return transformations_tab
 
-    def __create_modifications_tab(self) -> None:
+    @staticmethod
+    def __create_modifications_tab() -> None:
         crop_col = [
             [
                 sg.Push(),
