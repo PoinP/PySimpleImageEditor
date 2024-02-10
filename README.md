@@ -32,6 +32,7 @@ Tested on Windows and Linux
 * Add an are you sure you want to leave without saving prompt
 * Add keyboard shortcuts
 * Unify UI components for Windows, Linux and Mac
+* Add more filters like Multiply and Color Dodge
 
 ## Instructions on running the application
 
