@@ -20,7 +20,10 @@ A basic image editor written in python. It has support for layers, so you can ed
 #### Dependencies:
 
 * The program uses PySimpleGUI in order to display the UI
+* You need to have tkinter installed as well
 * Image modifications are handled by Pillow
+
+Tested on Windows and Linux
 
 #### TODO:
 
@@ -28,6 +31,7 @@ A basic image editor written in python. It has support for layers, so you can ed
 * Implement a pseudo background remover using the flood fill algorithm
 * Add an are you sure you want to leave without saving prompt
 * Add keyboard shortcuts
+* Unify UI components for Windows, Linux and Mac
 
 ## Instructions on running the application
 
