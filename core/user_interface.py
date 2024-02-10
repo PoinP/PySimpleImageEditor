@@ -44,7 +44,7 @@ class UserInterface():
 
     def save_popup(self, message: str) -> str:
         file_types = (("PNG", "*.png"), ("GIF", "*.gif"),
-                      ("JPEG", "*.jpeg, *.jpg"),)
+                      ("JPEG", "*.jpg *.jpeg"),)
         return sg.popup_get_file(message, file_types=file_types, save_as=True)
 
     def show_popup(self, *args, title: str) -> None:
