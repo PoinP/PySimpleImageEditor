@@ -209,8 +209,10 @@ class Image:
 
         crop = (x + crop_x, y + crop_y, xx + crop_xx, yy + crop_yy)
 
-        # if crop[0] >= crop[2] or crop[1] >= crop[3]:
-        #     return
+        width, height = self.__props.resize
+
+        if crop[0] + crop[2] >= width or crop[1] + crop[3] >= height:
+            return
 
         self.__props.crop = crop
         self.__apply_all_properties()
