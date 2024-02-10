@@ -45,15 +45,6 @@ class Program():
         self.curr_image: Image | None = None
         self.prev_image: Image | None = None
 
-        image = Image(os.path.join("assets", "damn.png"))
-        image2 = Image(os.path.join("assets", "robot.png"))
-        image3 = Image(os.path.join("assets", "lake.jpg"))
-
-        self.ws.add_layer(image2)
-        self.ws.add_layer(image)
-        self.ws.add_layer(image3)
-        self.ui.update_layers(self.ws)
-
     def run(self) -> None:
         while self.is_active:
             self.canvas.reset()
