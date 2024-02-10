@@ -249,6 +249,48 @@ class Image:
         self.__reference = ImageOps.invert(self.__reference).convert("RGBA")
         self.__apply_all_properties()
 
+    def apply_red_monochrome(self) -> None:
+        _, G, B = 0, 1, 2
+
+        source = self.__reference.split()
+
+        green = source[G].point(lambda x: x * 0.0)
+        blue = source[B].point(lambda x: x * 0.0)
+
+        source[G].paste(green)
+        source[B].paste(blue)
+
+        self.__reference = PILImage.merge(self.__reference.mode, source)
+        self.__apply_all_properties()
+
+    def apply_green_monochrome(self) -> None:
+        R, _, B = 0, 1, 2
+
+        source = self.__reference.split()
+
+        red = source[R].point(lambda x: x * 0.0)
+        blue = source[B].point(lambda x: x * 0.0)
+
+        source[R].paste(red)
+        source[B].paste(blue)
+
+        self.__reference = PILImage.merge(self.__reference.mode, source)
+        self.__apply_all_properties()
+
+    def apply_blue_monochrome(self) -> None:
+        R, G, _ = 0, 1, 2
+
+        source = self.__reference.split()
+
+        red = source[R].point(lambda x: x * 0.0)
+        green = source[G].point(lambda x: x * 0.0)
+
+        source[R].paste(red)
+        source[G].paste(green)
+
+        self.__reference = PILImage.merge(self.__reference.mode, source)
+        self.__apply_all_properties()
+
     def print_data(self) -> None:
         width = self.__image.width
         height = self.__image.height

@@ -186,7 +186,6 @@ class Program():
     @_require_image
     def __handle_postion(self) -> None:
         event, _ = self.curr_event
-
         if event == "-POS_UP-":
             self.curr_image.set_offset((0, -5))
         elif event == "-POS_DOWN-":
@@ -278,6 +277,12 @@ class Program():
             self.curr_image.convert_to_grayscale()
         elif event == "-F_NEGATIVE-":
             self.curr_image.apply_negative()
+        elif event == "-F_R_MONOCHROME-":
+            self.curr_image.apply_red_monochrome()
+        elif event == "-F_G_MONOCHROME-":
+            self.curr_image.apply_green_monochrome()
+        elif event == "-F_B_MONOCHROME-":
+            self.curr_image.apply_blue_monochrome()
         else:
             return
 
@@ -337,6 +342,8 @@ class Program():
             self.__save_image()
         elif event == "Save as...":
             self.__save_image_as()
+        elif event == "About":
+            UserInterface.show_about_info()
 
         if self.curr_image is None:
             return

@@ -10,7 +10,7 @@ class Workspace:
     The heart of the layer manipulation
     """
     def __init__(self) -> None:
-        self.__layers: list[tuple(str, Image)] = []
+        self.__layers: list[tuple[str, Image]] = []
 
     def __len__(self) -> int:
         return len(self.__layers)

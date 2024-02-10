@@ -93,6 +93,10 @@ class UserInterface():
     def get_window(self) -> sg.Window:
         return self.__window
 
+    @staticmethod
+    def show_about_info() -> None:
+        sg.Popup("Made with <3 by PoinP", title="About")
+
     def __enable(self, status: bool) -> None:
         for key in self.__window.key_dict:
             if not isinstance(key, str):
@@ -368,14 +372,13 @@ class UserInterface():
                 sg.Push(),
                 sg.Button("Grayscale", key="-F_GRAYSCALE-"),
                 sg.Button("Negative", key="-F_NEGATIVE-"),
-                sg.Button("Monochrome", key="-F_MONOCHROME-"),
                 sg.Push()
             ],
             [
                 sg.Push(),
-                sg.Button("Screen", key="-F_SCREEN-"),
-                sg.Button("Multiply", key="-F_MULTIPLY-"),
-                sg.Button("Color Dodge", key="-F_COLOR_DODGE-"),
+                sg.Button("Red Monochrome", key="-F_R_MONOCHROME-"),
+                sg.Button("Green Monochrome", key="-F_G_MONOCHROME-"),
+                sg.Button("Blue Monochrome", key="-F_B_MONOCHROME-"),
                 sg.Push()
             ]
         ]
