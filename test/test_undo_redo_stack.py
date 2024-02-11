@@ -71,3 +71,7 @@ class Test_UndoRedoStack(unittest.TestCase):
         self.assertIsNotNone(self.stack.redo())
         self.stack.clear_redo_stack()
         self.assertIsNone(self.stack.redo())
+
+
+if __name__ == "__main__":
+    unittest.main()

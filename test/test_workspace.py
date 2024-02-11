@@ -118,3 +118,7 @@ class Test_Workspace(unittest.TestCase):
         layer_names = self.ws.get_layers_names()
         for idx, layer in enumerate(layer_names):
             self.assertEqual(layer, names[idx])
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -11,7 +11,7 @@ A basic image editor written in python. It has support for layers, so you can ed
 * Supports scaling on the X, Y and XY axis
 * Supports cropping
 * Has some basic filters like Grayscale and Negative
-* Supports undo (ctrl+shift+z) and redo(ctrl+shift+y) on image modifications
+* Supports undo `(ctrl+shift+z)` and redo `(ctrl+shift+y)` on image modifications
 * Supports layers by displaying images from top to bottom layer
 * Can save images in PNG, JPEG and GIF format
 * Can open JPEG, BMP, GIF, PNG, ICO and PPM images
@@ -41,6 +41,8 @@ Tested on Windows and Linux
 3. Create a virtual environment using `py -m venv .venv` and activate it (Optional)
 4. Install the dependencies using `pip install -r requirements.txt`
 5. Run the application using `py main.py`
+
+> You can also run the test by running `py -m unittest` in the /test directory
 
 ## Examples
 
