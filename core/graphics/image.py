@@ -63,6 +63,12 @@ class Image:
         self.__props = _Properties()
         self.__props.resize = self.get_size()
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Image):
+            return False
+
+        return self.get_base_image() == other.get_base_image()
+
     def save(self, path: str, format: (str | None) = None) -> None:
         self.__image.save(path, format)
 
