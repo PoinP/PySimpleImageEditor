@@ -18,6 +18,9 @@ class UserInterface():
         layout = [menu_layout, tabs_layout, workspace_layout]
         self.__window = sg.Window(title, layout=layout, finalize=True)
 
+        self.__window.bind("<Control-Z>", "Undo")
+        self.__window.bind("<Control-Y>", "Redo")
+
         self.__event = ""
         self.__values: list[str] = []
 
