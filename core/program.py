@@ -4,7 +4,8 @@ classes used on the project together
 """
 
 import os
-import PySimpleGUI as sg
+import typing
+import PySimpleGUI as sg  # type: ignore
 
 from core.graphics.image import Image
 from core.graphics.image import ImageNotRecognizedError
@@ -16,10 +17,10 @@ from core.workflow.workspace import Workspace
 from core.workflow.undo_redo_stack import UndoRedoStack
 
 
-Event = (str, list[str])
+Event = typing.Any
 
 
-def _require_image(func: callable):
+def _require_image(func: typing.Callable):
     def inner(*args, **kwargs):
         if args[0].curr_image is not None:
             func(*args, **kwargs)
@@ -177,6 +178,10 @@ class Program():
     @_require_image
     def __handle_postion(self) -> None:
         event, _ = self.curr_event
+
+        if self.curr_image is None:
+            return
+
         if event == "-POS_UP-":
             self.curr_image.set_offset((0, -5))
         elif event == "-POS_DOWN-":
@@ -193,6 +198,9 @@ class Program():
     @_require_image
     def __handle_scale(self) -> None:
         event, _ = self.curr_event
+
+        if self.curr_image is None:
+            return
 
         if event == "-SCALE_UP-":
             self.curr_image.scale((1.1, 1.1))
@@ -215,6 +223,9 @@ class Program():
     def __handle_transformation(self) -> None:
         event, values = self.curr_event
 
+        if self.curr_image is None:
+            return
+
         if event == "-TR_ROTATION-":
             self.curr_image.rotate(-values[event])
         elif event == "-TR_FLIP_VERTICAL-":
@@ -229,6 +240,9 @@ class Program():
     @_require_image
     def __handle_slider(self) -> None:
         event, values = self.curr_event
+
+        if self.curr_image is None:
+            return
 
         if event == "-S_BRIGHTNESS-":
             self.curr_image.apply_brightness(values[event] / 100 + 1)
@@ -247,6 +261,9 @@ class Program():
     def __handle_crop(self) -> None:
         event, _ = self.curr_event
 
+        if self.curr_image is None:
+            return
+
         if event == "-CROP_LEFT-":
             self.curr_image.crop((10, 0, 0, 0))
         elif event == "-CROP_RIGHT-":
@@ -263,6 +280,9 @@ class Program():
     @_require_image
     def __handle_filters(self) -> None:
         event, _ = self.curr_event
+
+        if self.curr_image is None:
+            return
 
         if event == "-F_GRAYSCALE-":
             self.curr_image.convert_to_grayscale()
@@ -283,6 +303,9 @@ class Program():
     def __handle_adjustments(self) -> None:
         event, _ = self.curr_event
 
+        if self.curr_image is None:
+            return
+
         if event == "-A_CENTER-":
             self.curr_image.center(self.canvas.get_size())
         elif event == "-A_SHRINK_TO_FIT-":
@@ -300,6 +323,9 @@ class Program():
             if undo_action is not None:
                 curr_layer_name = self.ui.get_current_layer()
 
+                if curr_layer_name is None or self.curr_image is None:
+                    return
+
                 redo_action = (curr_layer_name, self.curr_image)
                 self.action_stack.add_redo_action(redo_action)
 
@@ -307,14 +333,19 @@ class Program():
                 self.ui.select_layer(layer_name)
                 self.ws.update_layer(layer_name, image.copy())
                 self.curr_image = self.ws.get_layer(layer_name)
-                self.prev_image = self.curr_image.copy()
+
+                if self.curr_image is not None:
+                    self.prev_image = self.curr_image.copy()
 
                 self.__update_slider_values()
 
         if event == "Redo":
-            redo_action = self.action_stack.redo()
+            redo_action = self.action_stack.redo()  # type: ignore
             if redo_action is not None:
                 curr_layer_name = self.ui.get_current_layer()
+
+                if curr_layer_name is None or self.curr_image is None:
+                    return
 
                 undo_action = (curr_layer_name, self.curr_image)
                 self.action_stack.add_undo_action(undo_action)
@@ -323,7 +354,9 @@ class Program():
                 self.ui.select_layer(layer_name)
                 self.ws.update_layer(layer_name, image.copy())
                 self.curr_image = self.ws.get_layer(layer_name)
-                self.prev_image = self.curr_image.copy()
+
+                if self.curr_image is not None:
+                    self.prev_image = self.curr_image.copy()
 
                 self.__update_slider_values()
 
@@ -352,6 +385,9 @@ class Program():
         self.set_undo = True
 
     def __update_slider_values(self) -> None:
+        if self.curr_image is None:
+            return
+
         props = self.curr_image.get_properties()
 
         def map_value(value) -> float:
@@ -424,5 +460,5 @@ class Program():
             self.ui.show_popup(error_message, image_path, title="Error")
             return
 
-        self.save_location = image_path
+        self.save_location = image_path  # type: ignore
         self.ui.show_popup("Image saved successfully!", title="Success")

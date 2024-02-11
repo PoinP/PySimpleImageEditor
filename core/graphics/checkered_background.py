@@ -3,8 +3,8 @@ Used to construct checkered patterns. Mainly used for
 the construction of a pattern similar to the one shown
 on the alpha channel of transperent images
 """
-from PIL import ImageDraw
-from PIL import Image as PILImage
+from PIL import ImageDraw           # type: ignore
+from PIL import Image as PILImage   # type: ignore
 
 from core.graphics.image import Image
 

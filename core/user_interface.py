@@ -2,7 +2,8 @@
 This module builds the User Interface of the program
 """
 
-import PySimpleGUI as sg
+import typing
+import PySimpleGUI as sg  # type: ignore
 
 from core.graphics.image import Image
 from core.workflow.workspace import Workspace
@@ -18,9 +19,9 @@ class UserInterface():
         self.__window = sg.Window(title, layout=layout, finalize=True)
 
         self.__event = ""
-        self.__values = []
+        self.__values: list[str] = []
 
-    def get_input(self, timeout: int) -> tuple[str, any]:
+    def get_input(self, timeout: int) -> tuple[str, typing.Any]:
         event, values = self.__window.read(timeout)
 
         self.__event = event
@@ -79,15 +80,15 @@ class UserInterface():
             self.__window["-WS_LAYERS-"].set_value(layer_name)
 
     def get_current_layer(self) -> str | None:
-        if len(self.__values["-WS_LAYERS-"]) == 0:
+        if len(self.__values["-WS_LAYERS-"]) == 0:  # type: ignore
             return None
 
-        return self.__values["-WS_LAYERS-"][0]
+        return self.__values["-WS_LAYERS-"][0]  # type: ignore
 
     def get_event(self) -> str:
         return self.__event
 
-    def get_values(self, event_key: str) -> list[any]:
+    def get_values(self, event_key: str) -> list[typing.Any]:
         return self.__values
 
     def get_window(self) -> sg.Window:
@@ -196,7 +197,7 @@ class UserInterface():
         ]
 
     @staticmethod
-    def __create_enchancers_tab() -> None:
+    def __create_enchancers_tab() -> list[list[sg.Element]]:
         brightness = [
             [
                 sg.Slider((-100, 500), 0, orientation="horizontal",
@@ -247,7 +248,7 @@ class UserInterface():
         return enchancers_tab
 
     @staticmethod
-    def __create_transfromations_tab() -> None:
+    def __create_transfromations_tab() -> list[list[sg.Element]]:
         orientation_col = [
             [
                 sg.Push(),
@@ -348,7 +349,7 @@ class UserInterface():
         return transformations_tab
 
     @staticmethod
-    def __create_modifications_tab() -> None:
+    def __create_modifications_tab() -> list[list[sg.Element]]:
         crop_col = [
             [
                 sg.Push(),

@@ -7,10 +7,10 @@ for e distructionless editing of the pictures
 import copy
 from dataclasses import dataclass
 
-from PIL import ImageOps
-from PIL import Image as PILImage
-from PIL import ImageTk, ImageEnhance
-from PIL import UnidentifiedImageError
+from PIL import ImageOps                # type: ignore
+from PIL import Image as PILImage       # type: ignore
+from PIL import ImageTk, ImageEnhance   # type: ignore
+from PIL import UnidentifiedImageError  # type: ignore
 
 
 @dataclass
@@ -44,20 +44,21 @@ class Image:
     def __init__(self, path: str | None = None,
                  image: PILImage.Image | None = None,
                  mode: str | None = None) -> None:
-        self.__image = None
+        self.__image = PILImage.new("RGBA", (1, 1), "Black")
+        self.__mode = mode if mode is not None else "RGBA"
 
-        if path is not None:
+        if path is None and image is None:
+            self.__image = PILImage.new(self.__mode, (1, 1), "Black")
+        elif path is not None:
             try:
                 self.__image = PILImage.open(path).convert("RGBA")
                 self.__image.load()
             except UnidentifiedImageError as e:
                 raise ImageNotRecognizedError(*e.args)
-
-        if image is not None and path is None:
+        elif image is not None and path is None:
             self.__image = image.copy()
 
         self.__reference = self.__image.copy()
-        self.__mode = mode if mode is not None else "RGBA"
 
         self.__props = _Properties()
         self.__props.resize = self.get_size()
@@ -76,7 +77,7 @@ class Image:
     def get_base_image(self) -> PILImage:
         return self.__image
 
-    def get_size(self) -> (int, int):
+    def get_size(self) -> tuple[int, int]:
         return self.__image.size
 
     def get_tkinter_data(self) -> ImageTk.PhotoImage:

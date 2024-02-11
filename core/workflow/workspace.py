@@ -16,9 +16,9 @@ class Workspace:
         return len(self.__layers)
 
     def get_layers_count(self) -> int:
-        len(self.__layers)
+        return len(self.__layers)
 
-    def get_layers(self) -> list[(str, Image)]:
+    def get_layers(self) -> list[tuple[str, Image]]:
         return self.__layers
 
     def get_layers_names(self) -> list[str]:
