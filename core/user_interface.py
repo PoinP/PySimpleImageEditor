@@ -91,7 +91,7 @@ class UserInterface():
     def get_event(self) -> str:
         return self.__event
 
-    def get_values(self, event_key: str) -> list[typing.Any]:
+    def get_values(self) -> list[typing.Any]:
         return self.__values
 
     def get_window(self) -> sg.Window:
@@ -371,6 +371,14 @@ class UserInterface():
             ],
         ]
 
+        monchrome_layout = [
+            [
+                sg.Button("Red", key="-F_R_MONOCHROME-"),
+                sg.Button("Green", key="-F_G_MONOCHROME-"),
+                sg.Button("Blue", key="-F_B_MONOCHROME-"),
+            ]
+        ]
+
         filters_col = [
             [
                 sg.Push(),
@@ -380,9 +388,7 @@ class UserInterface():
             ],
             [
                 sg.Push(),
-                sg.Button("Red Monochrome", key="-F_R_MONOCHROME-"),
-                sg.Button("Green Monochrome", key="-F_G_MONOCHROME-"),
-                sg.Button("Blue Monochrome", key="-F_B_MONOCHROME-"),
+                sg.Frame("Monochrome", layout=monchrome_layout),
                 sg.Push()
             ]
         ]
