@@ -180,15 +180,19 @@ class UserInterface():
                 sg.Push()
             ],
             [
+                sg.Push(),
                 sg.Listbox(values=[], size=(20, 15), key="-WS_LAYERS-",
                            no_scrollbar=True, enable_events=True),
+                sg.Push()
             ],
             [
+                sg.Push(),
                 sg.Button("↑", key="-WS_UP-", enable_events=True),
                 sg.Button("↓", key="-WS_DOWN-", enable_events=True),
                 sg.Button("R", key="-WS_RENAME-", enable_events=True),
                 sg.Button("x", key="-WS_DELETE-", enable_events=True),
-                sg.Button("+", key="-WS_ADD-", enable_events=True)
+                sg.Button("+", key="-WS_ADD-", enable_events=True),
+                sg.Push()
             ]
         ]
 
