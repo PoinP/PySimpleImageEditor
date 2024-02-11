@@ -34,16 +34,24 @@ class Test_UndoRedoStack(unittest.TestCase):
         self.assertEqual(redo_action[1], self.green)
 
     def test_refresh_layer_name(self):
-        self.stack.add_undo_action(("green", self.green))
-        self.stack.add_undo_action(("green", self.green))
-        self.stack.add_undo_action(("green", self.green))
+        green0 = self.green.copy()
+        green0.convert_to_grayscale()
+        self.stack.add_undo_action(("green", green0))
+
+        green1 = self.green.copy()
+        green1.apply_red_monochrome()
+        self.stack.add_undo_action(("green", green1))
+
+        green2 = self.green.copy()
+        green2.apply_contrast(2)
+        self.stack.add_undo_action(("green", green2))
 
         self.stack.refresh_layer_name("green", "green_new")
 
         names = ["green_new", "green_new", "green_new",
                  "blue", "green_new", "red"]
 
-        images = [self.green, self.green, self.green,
+        images = [green2, green1, green0,
                   self.blue, self.green, self.red]
 
         for i in range(6):
