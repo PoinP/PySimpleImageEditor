@@ -72,6 +72,11 @@ class Test_UndoRedoStack(unittest.TestCase):
         self.stack.clear_redo_stack()
         self.assertIsNone(self.stack.redo())
 
+    def test_peek_undo_stack(self):
+        action = self.stack.peek_undo_stack()
+        self.assertEqual(action[0], "blue")
+        self.assertEqual(action[1], self.blue)
+
 
 if __name__ == "__main__":
     unittest.main()

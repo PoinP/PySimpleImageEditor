@@ -90,13 +90,17 @@ class Program():
 
         if event == "__TIMEOUT__":
             if self.set_undo:
+                self.set_undo = False
+
+                if self.prev_image == self.curr_image:
+                    return
+
                 curr_layer_name = self.ui.get_current_layer()
                 action = (curr_layer_name, self.prev_image)
 
                 self.action_stack.clear_redo_stack()
                 self.action_stack.add_undo_action(action)
                 self.prev_image = self.curr_image.copy()
-                self.set_undo = False
             return
 
         if event.startswith("-WS_"):

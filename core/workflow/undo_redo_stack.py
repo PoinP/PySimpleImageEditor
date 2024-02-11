@@ -19,7 +19,18 @@ class UndoRedoStack():
     def __repr__(self) -> str:
         return f"Undo: {self.__undo_stack}, Redo: {self.__redo_stack}"
 
+    def peek_undo_stack(self) -> Action | None:
+        if len(self.__undo_stack) == 0:
+            return None
+
+        return self.__undo_stack[-1]
+
     def add_undo_action(self, action: tuple[str, Image]) -> None:
+        last_undo = self.peek_undo_stack()
+
+        if last_undo is not None and last_undo[1] == action[1]:
+            return
+
         if len(self.__undo_stack) > 20:
             self.__undo_stack.popleft()
 
